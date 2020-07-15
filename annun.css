@@ -1,0 +1,13 @@
+.annunciator {
+  float: left;
+  width: 150px;
+  height: 100px;
+  text-align: center;
+  font-weight: bold;
+  font-family: sans-serif;
+  line-height: 100px;
+}
+
+.row {
+  clear: both;
+}
