@@ -2,6 +2,9 @@ const Maths = Math;
 const host = 'localhost', port = 1883, iam = 'annun';
 let client, annunciators, panel;
 
+panel = $('#panel');
+client = new Paho.MQTT.Client(host, port, iam);
+
 function colour_to_css(colour, on = false) {
   switch(colour) {
     case 'red':
@@ -14,8 +17,6 @@ function colour_to_css(colour, on = false) {
 function topic(suffix) {
   return '/annun/' + (GetURLParameter('channel') || 'default') + '/' + suffix;
 }
-
-panel = $('#panel');
 
 function draw_panel() {
   let rows = Maths.max(...annunciators.map(a => a.row)),
@@ -36,7 +37,12 @@ function draw_panel() {
   }
 }
 
-function recv_msg(msg) {
+function on_connect() {
+  client.subscribe(topic('layout'));
+  client.subscribe(topic('annunciations'));
+}
+
+client.onMessageArrived = function(msg) {
   if (msg.destinationName == topic('layout')) {
     console.log('Updating layout...');
     annunciators = JSON.parse(msg.payloadString);
@@ -48,14 +54,6 @@ function recv_msg(msg) {
     let adiv = $('#' + annunciator.name);
     adiv.css('background-color', colour_to_css(annunciator.colour, evnt.event == 'on'));
   }
-}
-
-client = new Paho.MQTT.Client(host, port, iam);
-client.onMessageArrived = recv_msg;
-
-function on_connect() {
-  client.subscribe(topic('layout'));
-  client.subscribe(topic('annunciations'));
 }
 
 client.connect({onSuccess: on_connect});
